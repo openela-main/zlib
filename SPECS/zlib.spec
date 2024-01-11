@@ -2,7 +2,7 @@
 
 Name:    zlib
 Version: 1.2.11
-Release: 39%{?dist}
+Release: 40%{?dist}
 Summary: Compression and decompression library
 # /contrib/dotzlib/ have Boost license
 License: zlib and Boost
@@ -59,6 +59,10 @@ Patch27: zlib-1.2.11-Fix-broken-libxml2-for-python311.patch
 
 # fixed covscan issues
 Patch28: zlib-1.2.11-covscan-issues.patch
+
+# Fix for Crash in zlib deflateBound() function on s390x
+# Resolves: #2193044
+Patch29: zlib-1.2.11-IBM-Z-hw-accelrated-deflate-fix-crash-deflateBound.patch
 
 BuildRequires: make
 BuildRequires: automake, autoconf, libtool
@@ -136,6 +140,7 @@ developing applications which use minizip.
 %patch26 -p1
 %patch27 -p1
 %patch28 -p1
+%patch29 -p1
 
 
 iconv -f iso-8859-2 -t utf-8 < ChangeLog > ChangeLog.tmp
@@ -213,6 +218,10 @@ find $RPM_BUILD_ROOT -name '*.la' -delete
 
 
 %changelog
+* Thu May 04 2023 Lukas Javorsky <ljavorsk@redhat.com> - 1.2.11-40
+- Fix the Crash in zlib deflateBound() function on s390x
+- Resolves: BZ#2193044
+
 * Thu Feb 09 2023 Lukas Javorsky <ljavorsk@redhat.com> - 1.2.11-39
 - Fix covscan issue CWE-681
 
