@@ -1,0 +1,74 @@
+From f776e1609cc63bf486634ee9bc6226dac2c0d2f3 Mon Sep 17 00:00:00 2001
+From: Ondrej Dubaj <odubaj@redhat.com>
+Date: Tue, 15 Oct 2019 11:27:15 +0200
+Subject: [PATCH] fixed covscan issues
+
+---
+ crc32.c           | 2 +-
+ deflate.c         | 2 +-
+ test/crc32_test.c | 8 ++++----
+ 3 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/crc32.c b/crc32.c
+index 406d350..34132ea 100644
+--- a/crc32.c
++++ b/crc32.c
+@@ -302,7 +302,7 @@ unsigned long ZEXPORT crc32_z(crc, buf, len)
+ 
+     if (!crc32_func)
+         crc32_func = crc32_z_ifunc();
+-        return (*crc32_func)(crc, buf, len);
++    return (*crc32_func)(crc, buf, len);
+ }
+ 
+ #endif /* defined(Z_IFUNC_ASM) || defined(Z_IFUNC_NATIVE) */
+diff --git a/deflate.c b/deflate.c
+index 089285a..9b09718 100644
+--- a/deflate.c
++++ b/deflate.c
+@@ -1015,7 +1015,7 @@ int ZEXPORT deflate (strm, flush)
+      */
+     if (strm->avail_in != 0 || s->lookahead != 0 ||
+         (flush != Z_NO_FLUSH && s->status != FINISH_STATE)) {
+-        block_state bstate;
++        block_state bstate = 0;
+ 
+         bstate = DEFLATE_HOOK(strm, flush, &bstate) ? bstate :
+                  s->level == 0 ? deflate_stored(s, flush) :
+diff --git a/test/crc32_test.c b/test/crc32_test.c
+index 5d73128..2d2a6c7 100644
+--- a/test/crc32_test.c
++++ b/test/crc32_test.c
+@@ -11,25 +11,25 @@
+ #  include <stdlib.h>
+ #endif
+ 
+-void test_crc32  OF((uLong crc, Byte* buf, z_size_t len, uLong chk, int line));
++void test_crc32  OF((uLong crc, char* buf, z_size_t len, uLong chk, int line));
+ int main         OF((void));
+ 
+ typedef struct {
+     int line;
+ 	uLong crc;
+-    Byte* buf;
++    char* buf;
+ 	int len;
+     uLong expect;
+ } crc32_test;
+ 
+ void test_crc32(crc, buf, len, chk, line)
+     uLong crc;
+-    Byte *buf;
++    char *buf;
+     z_size_t len;
+     uLong chk;
+     int line;
+ {
+-    uLong res = crc32(crc, buf, len);
++    uLong res = crc32(crc, (Bytef *) buf, len);
+ 	if (res != chk) {
+         fprintf(stderr, "FAIL [%d]: crc32 returned 0x%08X expected 0x%08X\n",
+                 line, (unsigned int)res, (unsigned int)chk);
+-- 
+2.19.1
+
