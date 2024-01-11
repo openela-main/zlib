@@ -3,7 +3,7 @@
 
 Name:    zlib
 Version: 1.2.11
-Release: 21%{?dist}
+Release: 25%{?dist}
 Summary: The compression and decompression library
 # /contrib/dotzlib/ have Boost license
 License: zlib and Boost
@@ -14,14 +14,11 @@ Source: http://www.zlib.net/zlib-%{version}.tar.xz
 Patch0: zlib-1.2.5-minizip-fixuncrypt.patch
 # resolves: #805113
 Patch1: zlib-1.2.11-optimized-s390.patch
+# Backport upstream commit 2d80d3f6b52f9fa454c26c89d2d6a1790e1cecb0
+# Reason: Fuzzer founds issues with unknown memory access
+Patch2: zlib-1.2.11-Limit-hash-table-inserts.patch
 # IBM Z optimalizations
-Patch2: zlib-1.2.11-IBM-Z-hw-accelrated-deflate-s390x.patch
-# IBM CRC32 optimalization for POWER archs
-Patch3: zlib-1.2.11-optimized-CRC32-framework.patch
-# fixed firefox crash + added test case
-Patch4: zlib-1.2.11-firefox-crash-fix.patch
-# fixed covscan issues
-Patch5: zlib-1.2.11-covscan-issues.patch
+Patch3: zlib-1.2.11-IBM-Z-hw-accelrated-deflate-s390x.patch
 # fix for IBM Z optimalizations
 Patch6: zlib-1.2.11-IBM-Z-hw-accelrated-deflate-fix.patch
 # permit a deflateParams() parameter change
@@ -41,6 +38,28 @@ Patch13: zlib-1.2.11-cve-2022-37434_2.patch
 
 # Fix setting strm.adler on z15
 Patch14: zlib-1.2.11-IBM-Z-hw-accelrated-deflate-strm-adler-fix.patch
+
+# Optimization for z15
+Patch15: zlib-1.2.11-IBM-Z-hw-accelrated-inflate-small-window.patch
+# Optimized crc32 for Power 8+ processors
+# Source: https://github.com/madler/zlib/pull/750
+Patch16: zlib-1.2.11-Preparation-for-Power-optimizations.patch
+Patch17: zlib-1.2.11-Add-Power8-optimized-crc32.patch
+Patch18: zlib-1.2.11-Fix-clang-s-behavior-on-versions-7.patch
+
+# Fix for Unnecessary IFUNC resolver for crc32_z
+# Fix for s390x vectorize CRC32
+Patch19: zlib-1.2.11-s390x-vectorize-crc32.patch
+
+# Fix for python3.11 broken libxml2 and lxml on s390x
+Patch20: zlib-1.2.11-Fix-broken-libxml2-for-python311.patch
+
+# fixed covscan issues
+Patch21: zlib-1.2.11-covscan-issues.patch
+
+# Fix for Crash in zlib deflateBound() function on s390x
+# Resolves: #2193045
+Patch22: zlib-1.2.11-IBM-Z-hw-accelrated-deflate-fix-crash-deflateBound.patch
 
 BuildRequires: automake, autoconf, libtool
 
@@ -97,8 +116,6 @@ developing applications which use minizip.
 %endif
 %patch2 -p1
 %patch3 -p1
-%patch4 -p1
-%patch5 -p1
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
@@ -108,6 +125,14 @@ developing applications which use minizip.
 %patch12 -p1
 %patch13 -p1
 %patch14 -p1
+%patch15 -p1
+%patch16 -p1
+%patch17 -p1
+%patch18 -p1
+%patch19 -p1
+%patch20 -p1
+%patch21 -p1
+%patch22 -p1
 
 
 iconv -f iso-8859-2 -t utf-8 < ChangeLog > ChangeLog.tmp
@@ -188,6 +213,21 @@ find $RPM_BUILD_ROOT -name '*.la' -delete
 
 
 %changelog
+* Tue May 16 2023 Lukas Javorsky <ljavorsk@redhat.com> - 1.2.11-25
+- Fix the Crash in zlib deflateBound() function on s390x
+- Resolves: BZ#2193045
+
+* Tue May 16 2023 Lukas Javorsky <ljavorsk@redhat.com> - 1.2.11-24
+- Resolve fuzzing issue for unknown memory access
+
+* Tue May 09 2023 Lukas Javorsky <ljavorsk@redhat.com> - 1.2.11-23
+- Rebased Power 8 optimization patches
+- Fix for Unnecessary IFUNC resolver for crc32_z
+- Fix for python3.11 broken libxml2 and lxml on s390x
+
+* Tue May 09 2023 Lukas Javorsky <ljavorsk@redhat.com> - 1.2.11-22
+- Inflate small window optimization for IBM z15 rhbz#2154775
+
 * Wed Oct 12 2022 Ilya Leoshkevich <iii@linux.ibm.com> - 1.2.11-21
 - Fix for IBM strm.adler rhbz#2134074
 
